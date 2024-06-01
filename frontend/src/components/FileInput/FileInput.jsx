@@ -88,8 +88,6 @@ function FileInput(props) {
           >
             <option value=''>--Please choose an option--</option>
             <option value='Real Estate'>Real Estate</option>
-            <option value='Bond'>Bond</option>
-            <option value='Funds'>Funds</option>
           </select>
         </div>
         <div className='form-group'>
@@ -99,7 +97,7 @@ function FileInput(props) {
             className='form-control'
           />
         </div>
-        <button type='submit' className='submit-button'>
+        <button type='submit' className='submit-button' disabled={loading}>
           Submit
         </button>
       </form>
