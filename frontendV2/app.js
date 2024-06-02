@@ -1,18 +1,52 @@
-// Initialize web3.js with MetaMask
-const provider = window.ethereum;
-const web3 = new Web3(provider);
-
-// Address of the deployed contract
-const contractAddress = '0xB6243cb6E68dd3604758fC44A989C125c3b54a07'; // Your contract address
-
 // Load the ABI from the JSON file
-fetch('ABI/RealEstateTokenFactory.json')
-    .then(response => response.json()) // Parse JSON data
-    .then(abi => {
+async function loadABI() {
+    try {
+        const response = await fetch('ABI/RealEstateTokenFactory.json');
+        const json = await response.json();
+        return json;
+    } catch (error) {
+        console.error('Error loading ABI:', error);
+        throw error; // Throw the error to indicate failure to load ABI
+    }
+}
+
+// Initialize web3.js with MetaMask
+async function initWeb3() {
+    // Check if MetaMask is installed
+    if (window.ethereum) {
+        try {
+            // Request accounts
+            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            console.log('MetaMask accounts:', accounts);
+            return accounts;
+        } catch (error) {
+            console.error('Error requesting accounts:', error);
+            throw error; // Throw the error to indicate failure to request accounts
+        }
+    } else {
+        console.error('MetaMask not installed');
+        throw new Error('MetaMask not installed');
+    }
+}
+
+// Main function to interact with the contract
+async function main() {
+    try {
+        // Load ABI
+        const abi = await loadABI();
+
+        // Initialize web3
+        const accounts = await initWeb3();
+        const provider = window.ethereum;
+        const web3 = new Web3(provider);
+
+        // Address of the deployed contract
+        const contractAddress = '0xB6243cb6E68dd3604758fC44A989C125c3b54a07'; // Your contract address
+
         // Create a contract instance
         const contract = new web3.eth.Contract(abi, contractAddress);
 
-        // Add event listener for the verify form submission
+        // Event listener for the verify form submission
         const verifyForm = document.getElementById('verifyForm');
         verifyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -26,7 +60,7 @@ fetch('ABI/RealEstateTokenFactory.json')
             document.getElementById('step2').style.display = 'block';
         });
 
-        // Add event listener for the issue token form submission
+        // Event listener for the issue token form submission
         const issueTokenForm = document.getElementById('issueTokenForm');
         issueTokenForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -36,23 +70,13 @@ fetch('ABI/RealEstateTokenFactory.json')
                 return;
             }
 
-            // Get the user's MetaMask address
-            // const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-            const userAddress = "0xEaF23AaB2d8316f9bBC130F77254B3AE18BaD230";
-
-            // Check if the user is the owner
-            const owner = await contract.methods.owner().call();
-            // if (userAddress !== owner) {
-            //     alert('Only the owner can issue token requests.');
-            //     return;
-            // }
-            console.log("owner found", owner)
+            const to = accounts[0];  // Use the current user's address
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const initialSupply = document.getElementById('initialSupply').value;
 
             try {
-                const receipt = await contract.methods.issueTokenRequest(userAddress, name, symbol, initialSupply).send({ from: owner });
+                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: accounts[0] });
                 console.log('Token request issued', receipt);
 
                 contract.events.RequestFulFilled()
@@ -61,7 +85,7 @@ fetch('ABI/RealEstateTokenFactory.json')
                         const response = event.returnValues.response;
 
                         try {
-                            const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: userAddress });
+                            const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: accounts[0] });
                             console.log('Mint request fulfilled', mintReceipt);
                         } catch (error) {
                             console.error('Error fulfilling mint request', error);
@@ -75,7 +99,12 @@ fetch('ABI/RealEstateTokenFactory.json')
                 console.error('Error issuing token request', error);
             }
         });
-    })
-    .catch(error => {
-        console.error('Error loading ABI:', error);
-    });
+
+    } catch (error) {
+        // Handle errors
+        console.error('An error occurred:', error);
+    }
+}
+
+// Call the main function when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', main);
