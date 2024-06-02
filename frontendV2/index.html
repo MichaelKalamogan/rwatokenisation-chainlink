@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RWA Tokenisation Project</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div id="app">
-      <h1>RWA Tokenisation Project</h1>
-      <div id="file-input-container" class="file-input-container"></div>
-      <br />
-      <div
-        id="token-form-container"
-        class="file-input-container"
-        style="display: none;"
-      ></div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="script.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Token Request</title>
+</head>
+<body>
+    <h1>Issue Token Request</h1>
+    <form id="tokenForm">
+        <label for="name">Token Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        
+        <label for="symbol">Token Symbol:</label>
+        <input type="text" id="symbol" name="symbol" required><br><br>
+        
+        <label for="initialSupply">Initial Supply:</label>
+        <input type="number" id="initialSupply" name="initialSupply" required><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="app.js"></script>
+</body>
 </html>
