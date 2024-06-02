@@ -71,7 +71,7 @@ async function main() {
             const initialSupply = document.getElementById('initialSupply').value;
 
             try {
-                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: accounts[0] });
+                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: '0x991C25a6e8057eDf651949311F7102E2fe833Ae5' });
                 console.log('Token request issued', receipt);
 
                 contract.events.RequestFulFilled()
