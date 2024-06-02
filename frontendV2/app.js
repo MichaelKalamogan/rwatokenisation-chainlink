@@ -6,13 +6,11 @@ async function loadABI() {
         return json;
     } catch (error) {
         console.error('Error loading ABI:', error);
-        throw error; // Throw the error to indicate failure to load ABI
+        throw error; 
     }
 }
 
-// Initialize web3.js with MetaMask
 async function initWeb3() {
-    // Check if MetaMask is installed
     if (window.ethereum) {
         try {
             // Request accounts
@@ -21,7 +19,7 @@ async function initWeb3() {
             return accounts;
         } catch (error) {
             console.error('Error requesting accounts:', error);
-            throw error; // Throw the error to indicate failure to request accounts
+            throw error; 
         }
     } else {
         console.error('MetaMask not installed');
@@ -41,16 +39,14 @@ async function main() {
         const web3 = new Web3(provider);
 
         // Address of the deployed contract
-        const contractAddress = '0xB6243cb6E68dd3604758fC44A989C125c3b54a07'; // Your contract address
+        const contractAddress = '0xB6243cb6E68dd3604758fC44A989C125c3b54a07'; 
 
         // Create a contract instance
         const contract = new web3.eth.Contract(abi, contractAddress);
 
-        // Event listener for the verify form submission
         const verifyForm = document.getElementById('verifyForm');
         verifyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Implement file handling and validation logic here
             
             // Set verified to true
             verified = true;
@@ -60,7 +56,6 @@ async function main() {
             document.getElementById('step2').style.display = 'block';
         });
 
-        // Event listener for the issue token form submission
         const issueTokenForm = document.getElementById('issueTokenForm');
         issueTokenForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -70,7 +65,7 @@ async function main() {
                 return;
             }
 
-            const to = accounts[0];  // Use the current user's address
+            const to = accounts[0]; 
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const initialSupply = document.getElementById('initialSupply').value;
@@ -101,10 +96,8 @@ async function main() {
         });
 
     } catch (error) {
-        // Handle errors
         console.error('An error occurred:', error);
     }
 }
 
-// Call the main function when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', main);
