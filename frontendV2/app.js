@@ -33,7 +33,6 @@ function getNewContractAddress(receipt) {
     return null;
 }
 
-
 // Load the ABI from the JSON file
 async function loadABI() {
     try {
@@ -101,14 +100,18 @@ async function main() {
                 return;
             }
 
+
             const owner = await contract.methods.owner().call();
+
             const to = accounts[0]; 
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const initialSupply = document.getElementById('initialSupply').value;
 
             try {
+
                 const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: owner });
+
                 console.log('Token request issued', receipt);
 
                 contract.events.RequestFulFilled()
@@ -117,6 +120,7 @@ async function main() {
                         const response = event.returnValues.response;
 
                         try {
+
                             const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: owner });
                             console.log('Mint request fulfilled', mintReceipt);
 
@@ -129,6 +133,7 @@ async function main() {
                             console.log(`Token balance for ${to}: ${balance}`);
                             document.getElementById('tokenAddress').innerText = `Your token is created at address: ${tokenAddress}`;
                             document.getElementById('tokenBalance').innerText = `Token balance for ${to}: ${balance}`;
+
                         } catch (error) {
                             console.error('Error fulfilling mint request', error);
                         }
