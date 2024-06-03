@@ -1,3 +1,38 @@
+// Load the token ABI
+async function loadTokenABI() {
+    try {
+        const response = await fetch('ABI/RealEstateToken.json');
+        const json = await response.json();
+        return json;
+    } catch (error) {
+        console.error('Error loading token ABI:', error);
+        throw error;
+    }
+}
+
+// Function to get the balance of the new token for a given address
+async function getTokenBalance(tokenAddress, ownerAddress) {
+    const web3 = new Web3(window.ethereum);
+    const tokenABI = await loadTokenABI();
+
+    const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+    const balance = await tokenContract.methods.balanceOf(ownerAddress).call();
+    return balance;
+}
+
+// Function to parse the transaction receipt and find the new contract address
+function getNewContractAddress(receipt) {
+    if (receipt.status) {
+        for (const log of receipt.logs) {
+            // Check for contract creation log
+            if (log.topics.length === 0 && log.data.length === 66) {
+                return web3.utils.toChecksumAddress('0x' + log.data.slice(26));
+            }
+        }
+    }
+    return null;
+}
+
 // Load the ABI from the JSON file
 async function loadABI() {
     try {
@@ -65,13 +100,18 @@ async function main() {
                 return;
             }
 
+
+            const owner = await contract.methods.owner().call();
+
             const to = accounts[0]; 
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const initialSupply = document.getElementById('initialSupply').value;
 
             try {
-                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: '0x991C25a6e8057eDf651949311F7102E2fe833Ae5' });
+
+                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: owner });
+
                 console.log('Token request issued', receipt);
 
                 contract.events.RequestFulFilled()
@@ -80,8 +120,20 @@ async function main() {
                         const response = event.returnValues.response;
 
                         try {
-                            const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: '0x991C25a6e8057eDf651949311F7102E2fe833Ae5' });
+
+                            const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: owner });
                             console.log('Mint request fulfilled', mintReceipt);
+
+                            const tokenAddress = getNewContractAddress(mintReceipt);
+
+                            // Get the balance of the new token
+                            const balance = await getTokenBalance(tokenAddress, to);
+
+                            console.log(`Your token is created at address: ${tokenAddress}`);
+                            console.log(`Token balance for ${to}: ${balance}`);
+                            document.getElementById('tokenAddress').innerText = `Your token is created at address: ${tokenAddress}`;
+                            document.getElementById('tokenBalance').innerText = `Token balance for ${to}: ${balance}`;
+
                         } catch (error) {
                             console.error('Error fulfilling mint request', error);
                         }
