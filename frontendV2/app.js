@@ -101,13 +101,14 @@ async function main() {
                 return;
             }
 
+            const owner = await contract.methods.owner().call();
             const to = accounts[0]; 
             const name = document.getElementById('tokenName').value;
             const symbol = document.getElementById('tokenSymbol').value;
             const initialSupply = document.getElementById('initialSupply').value;
 
             try {
-                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: accounts[0] });
+                const receipt = await contract.methods.issueTokenRequest(to, name, symbol, initialSupply).send({ from: owner });
                 console.log('Token request issued', receipt);
 
                 contract.events.RequestFulFilled()
@@ -116,7 +117,7 @@ async function main() {
                         const response = event.returnValues.response;
 
                         try {
-                            const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: accounts[0] });
+                            const mintReceipt = await contract.methods._mintFulFillRequest(requestId, response).send({ from: owner });
                             console.log('Mint request fulfilled', mintReceipt);
 
                             const tokenAddress = getNewContractAddress(mintReceipt);
